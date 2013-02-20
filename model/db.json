@@ -1,0 +1,24 @@
+{
+	"devel": {
+		"host": "localhost",
+		"dbname": "MazeGame",
+		"ReadOnly": "changeit",
+		"LoggedInReadOnly": "changeit",
+		"AdminReadOnly": "changeit",
+		"LoggedInUpdate": "changeit",
+		"AdminUpdate": "changeit",
+		"LoggedInDelete": "changeit",
+		"AdminDelete": "changeit"
+	},
+	"prod": {
+		"host": "localhost",
+		"dbname": "changeit",
+		"ReadOnly": "changeit",
+		"LoggedInReadOnly": "changeit",
+		"AdminReadOnly": "changeit",
+		"LoggedInUpdate": "changeit",
+		"AdminUpdate": "changeit",
+		"LoggedInDelete": "changeit",
+		"AdminDelete": "changeit"
+	}
+}
