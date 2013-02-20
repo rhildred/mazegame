@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head><title>Maze Game</title>
+	<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+	<header><h1>Maze Game</h1><h2>prepare to be amazed</h2></header>
+	<canvas width="600" height="480" id='myCanvas'>If you can see this, your browser doesn't support canvas
+		<img src="images/WhiteBear.png" alt="the white bear&apos;s spritesheet for my game" id="whitebear" />
+		<img src="images/BlackBear.png" alt="the black bear&apos;s spritesheet for my game" id="blackbear" />
+		<img src="images/tiles.png" alt="the tiles for my game" id="tiles" />
+	</canvas>
+	<div id="screendata">White xPos: <span id="wxPos">0</span>White yPos: <span id="wyPos">0</span><br />
+		Black xPos: <span id="bxPos">0</span>Black yPos: <span id="byPos">0</span><br />
+				
+	</div>
+</body>
+<script>
+	var canvas = document.getElementById('myCanvas');
+	var c = canvas.getContext('2d');
+	var maze = new Maze(720, 720);
+	var blackBear = new PolarBear("blackbear");
+	var whiteBear = new PolarBear("whitebear", 120, 0);
+	setInterval(function draw(){
+		maze.draw();
+		whiteBear.update();
+		whiteBear.draw();
+		blackBear.update();
+		blackBear.draw();
+		document.getElementById('wxPos').innerHTML = whiteBear.x;
+		document.getElementById('wyPos').innerHTML = whiteBear.y;
+		document.getElementById('bxPos').innerHTML = blackBear.x;
+		document.getElementById('byPos').innerHTML = blackBear.y;
+
+	}, 50);
+	
+	setInterval(function(){
+		blackBear.calculateOffset();
+		whiteBear.calculateOffset();
+	}, 100);
+
+	
+	
+	window.addEventListener('keydown', function(e){
+		switch (e.keyCode) {
+			case 38: // up
+				whiteBear.moveNorth();
+				break;
+			case 40: //down
+				whiteBear.moveSouth();
+				break;
+			case 37: //left
+				whiteBear.moveWest();
+				break;
+			case  39: // right
+				whiteBear.moveEast();
+				break;
+			case 104: // up
+				blackBear.moveNorth();
+				break;
+			case 98: //down
+				blackBear.moveSouth();
+				break;
+			case 100: //left
+				blackBear.moveWest();
+				break;
+			case  102: // right
+				blackBear.moveEast();
+				break;
+		}
+		
+	}, false);
+	window.addEventListener('keyup', function(){
+		whiteBear.stop();
+		blackBear.stop();
+	}, false);
+
+	
+	function PolarBear(spritesheet, initx, inity, width, height)
+	{
+		this.spritesheet = spritesheet || "whitebear";
+		this.width = width || 120;
+		this.height = height || 120;
+		this.x = initx || 0;
+		this.y = inity || 0;
+		this.dx = 0;
+		this.dy = 0;
+		this.offsetX = 0;
+		this.offsetY = 0;
+		this.facing = 'south';
+	}
+	
+	PolarBear.prototype.calculateOffset = function()
+	{
+		if(this.dx == 0 && this.dy == 0){
+			this.offsetY = 0;
+			switch(this.facing){
+				case 'south':
+					if(this.offsetX == 0){
+						this.offsetX = 120;
+					}else{
+						this.offsetX = 0;
+					}
+					break;
+				case 'north':
+					if(this.offsetX == 720){
+						this.offsetX = 840;
+					}else{
+						this.offsetX = 720;
+					}
+					break;
+				case 'east':
+					if(this.offsetX == 480){
+						this.offsetX = 600;
+					}else{
+						this.offsetX = 480;
+					}
+					break;
+				case 'west':
+					if(this.offsetX == 240){
+						this.offsetX = 360;
+					}else{
+						this.offsetX = 240;
+					}
+					break;
+			}
+		}else{
+			switch(this.facing){
+				case 'south':
+					this.offsetY = 120;
+					break;
+				case 'north':
+					this.offsetY = 480;
+					break;
+				case 'east':
+					this.offsetY = 360;
+					break;
+				case 'west':
+					this.offsetY = 240;
+					break;
+			}
+			if(this.offsetX == 840){
+				this.offsetX = 0;
+			}
+			else
+			{
+				this.offsetX += 120;
+			}
+		}
+	}
+	
+	PolarBear.prototype.update = function(){
+		var newxPos = this.x + this.dx;
+		if(newxPos < 0 || newxPos + this.width > maze.width){
+			this.dx = 0;
+		}
+		var newyPos = this.y + this.dy;
+		if(newyPos < 0 || newyPos + this.height > maze.height){
+			this.dy = 0;
+		}
+		if(maze.OnBlack(this)){
+			this.dx = 0;
+			this.dy = 0;
+		}
+		this.x += this.dx;
+		this.y += this.dy;
+		maze.scrollIfNeeded(this);		
+	}
+	
+	PolarBear.prototype.draw = function(){
+		c.drawImage(document.getElementById(this.spritesheet), this.offsetX, this.offsetY, 120, 120, 
+			this.x - maze.canvasLeft, this.y - maze.canvasTop, this.width, this.height);
+	}
+	
+	PolarBear.prototype.stop = function(){
+		this.dy = 0;
+		this.dx = 0;
+	}
+	
+	PolarBear.prototype.moveNorth = function(){
+		this.dy = -2;
+		this.facing = 'north';
+	}
+	
+	PolarBear.prototype.moveSouth = function(){
+		this.dy = 2;
+		this.facing = 'south';
+	}
+	
+	PolarBear.prototype.moveEast = function(){
+		this.dx = 4;
+		this.facing = 'east';
+	}
+	
+	PolarBear.prototype.moveWest = function(){
+		this.dx = -4;
+		this.facing = 'west';
+	}
+
+	function Tile(value, x, y, width, height){
+		this.value = value;
+		this.width = width || 120;
+		this.height = height || 120;
+		this.x = x * this.width;
+		this.y = y * this.height;
+	}
+	
+	Tile.prototype.draw = function()
+	{
+		if(this.value == 0){
+			c.fillStyle = "rgba(255, 255, 255, 1)";	
+			c.fillRect(this.x - maze.canvasLeft, this.y - maze.canvasTop, this.width, this.height);		
+		}else{
+			var offsetX = (this.value - 1) % 5;
+			var offsetY = Math.floor((this.value - 1)  / 5);
+			c.drawImage(document.getElementById("tiles"), offsetX * this.width, offsetY * this.height, 120, 120, 
+			this.x - maze.canvasLeft, this.y - maze.canvasTop, this.width, this.height);
+
+		}
+	}
+	
+	Tile.prototype.OnBlack = function(b){
+		if(this.value == 0) return false;
+		var rc = this.x < b.x + b.width + b.dx &&
+		          b.x + b.dx < this.x + this.width &&
+		          this.y < b.y + b.height + b.dy &&
+		          b.y + b.dy < this.y + this.height;
+		return(rc);
+	}
+
+	function Maze(width, height){
+		this.width = width || canvas.width;
+		this.height = height || canvas.height;
+		this.tiles = [new Tile(0, 0,0),	new Tile(0, 1,0), new Tile(0, 2,0), new Tile(14, 3,0),	new Tile(0, 4,0), new Tile(0, 5,0),
+		new Tile(2, 0,1), new Tile(3, 1,1), new Tile(0, 2,1), new Tile(0, 3,1), new Tile(0, 4,1), new Tile(1, 5,1),
+		new Tile(7, 0,2), new Tile(5, 1,2), new Tile(2, 2,2), new Tile(3, 3,2), new Tile(0, 4,2), new Tile(6, 5,2),
+		new Tile(7, 0,3), new Tile(7, 1,3), new Tile(7, 2,3), new Tile(8, 3,3), new Tile(0, 4,3), new Tile(6, 5,3),
+		new Tile(7, 0,4), new Tile(7, 1,4), new Tile(7, 2,4), new Tile(8, 3,4), new Tile(0, 4,4), new Tile(6, 5,4),
+		new Tile(7, 0,5), new Tile(7, 1,5), new Tile(7, 2,5), new Tile(8, 3,5), new Tile(0, 4,5), new Tile(6, 5,5)
+		
+		
+		 ];
+		this.canvasTop = 0;
+		this.canvasLeft = 0;
+	}
+	
+	Maze.prototype.draw = function(){
+		for(var i = 0; i < this.tiles.length; i++){
+			this.tiles[i].draw();
+		}
+	}
+	
+	Maze.prototype.OnBlack = function(hero){
+		for(var i = 0; i < this.tiles.length; i++){
+			if(this.tiles[i].OnBlack(hero)){
+				return true;	
+			}
+		}
+		return false;		
+	}
+	
+	Maze.prototype.scrollIfNeeded = function(hero){
+		if(hero.dx && hero.x - this.canvasLeft < 0){
+			// hero in motion and against left edge
+			this.canvasLeft = hero.x + hero.dx;
+		}else if(hero.dx && hero.x + hero.width - this.canvasLeft > canvas.width){
+			// hero in motion and against right edge
+			this.canvasLeft = hero.x + hero.width + hero.dx - canvas.width;
+		}
+		
+		if(hero.dy && hero.y - this.canvasTop < 0){
+			// hero in motion and against top edge 
+			this.canvasTop = hero.y + hero.dy;
+		}else if(hero.dy && hero.y + hero.height - this.canvasTop > canvas.height){
+			// hero in motion and against bottom edge of canvas
+			this.canvasTop = hero.y + hero.height + hero.dy - canvas.height;
+		}
+	}
+	
+
+</script>
+</html>
