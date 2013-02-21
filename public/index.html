@@ -16,12 +16,15 @@
 				
 	</div>
 </body>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+<script src="js/ActiveRecord.js"></script>
 <script>
 	var canvas = document.getElementById('myCanvas');
 	var c = canvas.getContext('2d');
 	var maze = new Maze(720, 720);
 	var blackBear = new PolarBear("blackbear", 0, 0);
 	var whiteBear = new PolarBear("whitebear", 120, 0);
+	
 	setInterval(function draw(){
 		maze.draw();
 		whiteBear.update();
@@ -196,15 +199,22 @@
 	PolarBear.prototype.moveWest = function(){
 		this.dx = -4;
 		this.facing = 'west';
-	}
+	}	
+	
+	var Tile = ActiveRecord.extend({constructor: function(item){
+		if(item !== undefined){
+			this.x = item.x * this.width;
+			this.y = item.y * this.height;
+			this.value = item.value;
+		}
+	}, name: 'tile', width: 120, height: 120});		
+	
 
-	function Tile(value, x, y, width, height){
-		this.value = value;
-		this.width = width || 120;
-		this.height = height || 120;
-		this.x = x * this.width;
-		this.y = y * this.height;
-	}
+	var oTile = new Tile();
+	oTile.find(null, null, function(aRc){
+		maze.tiles = aRc;
+	} );
+
 	
 	Tile.prototype.draw = function()
 	{
@@ -234,17 +244,9 @@
 	function Maze(width, height){
 		this.width = width || canvas.width;
 		this.height = height || canvas.height;
-		this.tiles = [new Tile(0, 0,0),	new Tile(0, 1,0), new Tile(0, 2,0), new Tile(17, 3,0),	new Tile(0, 4,0), new Tile(0, 5,0),
-		new Tile(2, 0,1), new Tile(3, 1,1), new Tile(0, 2,1), new Tile(0, 3,1), new Tile(0, 4,1), new Tile(1, 5,1),
-		new Tile(13, 0,2), new Tile(5, 1,2), new Tile(2, 2,2), new Tile(3, 3,2), new Tile(0, 4,2), new Tile(12, 5,2),
-		new Tile(13, 0,3), new Tile(13, 1,3), new Tile(13, 2,3), new Tile(14, 3,3), new Tile(0, 4,3), new Tile(12, 5,3),
-		new Tile(13, 0,4), new Tile(13, 1,4), new Tile(13, 2,4), new Tile(14, 3,4), new Tile(0, 4,4), new Tile(12, 5,4),
-		new Tile(13, 0,5), new Tile(13, 1,5), new Tile(13, 2,5), new Tile(14, 3,5), new Tile(0, 4,5), new Tile(12, 5,5)
-		
-		
-		 ];
 		this.canvasTop = 0;
 		this.canvasLeft = 0;
+		this.tiles = new Array();
 	}
 	
 	Maze.prototype.draw = function(){
