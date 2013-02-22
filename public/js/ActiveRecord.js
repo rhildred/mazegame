@@ -60,6 +60,7 @@ var ActiveRecord = Class.extend({
 			$.each(data.items, function(i, item) {
 				var oRC = new (ActiveRecord.extend(that));
 				oRC.__proto__ = that.__proto__;
+				$.each(item, function(key, value){ oRC[key] = value});
 				oRC.constructor(item);
 				aRc.push(oRC);
 			});

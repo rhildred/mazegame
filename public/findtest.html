@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+	<body>
+		Hello World
+	<script src="http://code.jquery.com/jquery-latest.js"></script>
+	<script src="js/ActiveRecord.js"></script>
+	<script>
+		var Tile = ActiveRecord.extend({constructor: function(){}, name: 'tile', width: 120, height: 120});		
+		Tile.prototype.toString = function(){
+			var rc = "value =" + this.value + " x = " + this.x + " y = " + this.y;
+			return rc;
+		}
+		var oTest = new Tile();
+		oTest.find(null, null, function(aRc){
+			for(var i = 0; i < aRc.length; i++){
+				$('body').append("<p>" + aRc[i].toString() + "</p>");
+			}
+		} );
+	</script>
+	</body>
+</html>
